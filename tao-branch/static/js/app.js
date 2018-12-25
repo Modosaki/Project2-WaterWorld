@@ -48,7 +48,7 @@ function buildCharts(iso) {
     for (var i in data['Total population with access to safe drinking-water (JMP)'].Year){
       graphingData.push(
         {
-          date: data['Total population with access to safe drinking-water (JMP)'].Year[i],
+          date: parseTime(data['Total population with access to safe drinking-water (JMP)'].Year[i]),
           value: data['Total population with access to safe drinking-water (JMP)'].Value[i]
         });
     }
@@ -57,13 +57,13 @@ function buildCharts(iso) {
 
 
 
-    var xTimeScale = d3.scaleLinear()
+    var xTimeScale = d3.scaleTime()
                        .domain(d3.extent(graphingData, data => data.date))
                        .range([0, chartWidth]);
 
     // Configure a linear scale with a range between the chartHeight and 0
     var yLinearScale = d3.scaleLinear()
-                         .domain([0, d3.max(graphingData, data => data.value)*1.1] )
+                         .domain([0, 105] )
                          .range([chartHeight, 0]);
 
     // Create two new functions passing the scales in as arguments
