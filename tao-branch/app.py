@@ -30,9 +30,6 @@ Base.prepare(db.engine, reflect=True)
 Aquastat_table = Base.classes.Aquastat_table
 WQI_table = Base.classes.WQI_table
 
-#sample the max wash frequency    
-#max_wfreq = db.session.query(func.max(Samples_Metadata.WFREQ)).all()[0][0]
-#max_id = db.session.query(Samples_Metadata.sample,).filter(Samples_Metadata.WFREQ == max_wfreq).all()
 
 @app.route("/")
 def index():
