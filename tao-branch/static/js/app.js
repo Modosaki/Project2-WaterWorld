@@ -77,7 +77,7 @@ function buildCharts(iso) {
                      .y( data => yLinearScale(data.value) );
 
     // Append an SVG path and plot its points using the line function
-    chartGroup.append("path")
+    var path = chartGroup.append("path")
     // The drawLine function returns the instructions for creating the line for forceData
               .attr("d", drawLine(graphingData))
               .classed("line", true);
@@ -93,6 +93,17 @@ function buildCharts(iso) {
       .classed("axis", true)
       .attr("transform", `translate(0, ${chartHeight})`)
       .call(bottomAxis);
+
+    var totalLength = path.node().getTotalLength();
+
+    path.attr("stroke-dasharray", totalLength+" "+totalLength)
+        .attr("stroke-dashoffset", totalLength)
+        .transition()
+        .duration(1000)
+        .ease(d3.easeLinear)
+        .attr("stroke-dashoffset",0);
+
+
 
   }).catch(function(error){
     console.log(error);
