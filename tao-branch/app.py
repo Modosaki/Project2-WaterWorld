@@ -46,7 +46,7 @@ def names():
     aqua_df = pd.read_sql_query(stmt, db.session.bind)
 
     # Return a list of the column names (sample names)
-    return jsonify(list( aqua_df.iso.unique() ))
+    return jsonify(list( aqua_df.iso.unique() ) )
 
 
 @app.route("/aquadata/<iso>")

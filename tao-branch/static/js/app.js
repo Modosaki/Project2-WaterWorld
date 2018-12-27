@@ -35,78 +35,141 @@ function buildCharts(iso) {
   //fetch countries data from iso code
   d3.json("/aquadata/"+iso).then(function(data){
     //console.log(data);
-
-    // Use `.html("") to clear any existing metadata
-    d3.select(".line").remove();
+    var country = data.country
+    // clear previous graph
+    chartGroup.selectAll(".line").remove();
     chartGroup.selectAll(".axis").remove();
+    chartGroup.selectAll(".text").remove();
+    svg.selectAll(".legend").remove();
 
-    //svg.html("");
+    //format data for plotting
+    var total_pop = data['Total population with access to safe drinking-water (JMP)']
+    var rural_pop = data["Rural population with access to safe drinking-water (JMP)"] 
+    var urban_pop = data["Urban population with access to safe drinking-water (JMP)"]
+    
+    var resultData = []
+    var dataCollection = [total_pop,rural_pop,urban_pop]
+    dataCollection.forEach(function(d){
+      var temp=[]  
+      for (let i in d.Year){
+          temp.push(
+            {
+              date:parseTime(d.Year[i]),
+              value:d.Value[i]
+            }
+          )
+        }
+      resultData.push(temp)
+    })
 
-
-    graphingData = [];
-
-    for (var i in data['Total population with access to safe drinking-water (JMP)'].Year){
-      graphingData.push(
-        {
-          date: parseTime(data['Total population with access to safe drinking-water (JMP)'].Year[i]),
-          value: data['Total population with access to safe drinking-water (JMP)'].Value[i]
-        });
-    }
-    console.log(graphingData)
-
-
-
-
+    var timeDomain = d3.extent(resultData[2],data => data.date)
+    
     var xTimeScale = d3.scaleTime()
-                       .domain(d3.extent(graphingData, data => data.date))
+                       .domain(timeDomain)
                        .range([0, chartWidth]);
 
-    // Configure a linear scale with a range between the chartHeight and 0
+    // // Configure a linear scale with a range between the chartHeight and 0
     var yLinearScale = d3.scaleLinear()
                          .domain([0, 105] )
                          .range([chartHeight, 0]);
 
-    // Create two new functions passing the scales in as arguments
-    // These will be used to create the chart's axes
+    // // Create two new functions passing the scales in as arguments
+    // // These will be used to create the chart's axes
     var bottomAxis = d3.axisBottom(xTimeScale);
     var leftAxis = d3.axisLeft(yLinearScale);
 
-    // Configure a line function which will plot the x and y coordinates using our scales
     var drawLine = d3.line()
-                     .x( data => xTimeScale(data.date) )
-                     .y( data => yLinearScale(data.value) );
+                 .x( d => xTimeScale(d.date) )
+                 .y( d => yLinearScale(d.value) );
 
-    // Append an SVG path and plot its points using the line function
-    var path = chartGroup.append("path")
-    // The drawLine function returns the instructions for creating the line for forceData
-              .attr("d", drawLine(graphingData))
-              .classed("line", true);
+    var chart = chartGroup.selectAll(".line")
+                          .data(resultData)
+                          .enter()
 
-    // Append an SVG group element to the chartGroup, create the left axis inside of it
-    chartGroup.append("g")
-              .classed("axis", true)
-              .call(leftAxis);
+    //set the colors and texts for each data
+    var colors=["gold","blue","red"]
+    var legendTexts=["total","rural","urban"]
 
-    // Append an SVG group element to the chartGroup, create the bottom axis inside of it
-    // Translate the bottom axis to the bottom of the page
-    chartGroup.append("g")
-      .classed("axis", true)
-      .attr("transform", `translate(0, ${chartHeight})`)
-      .call(bottomAxis);
+    //Draw the lines with different color
+    var path = chart.append("path")
+                    .attr("class", "line")
+                    .style("stroke", (d,i)=> colors[i] )
+                    .attr("d", drawLine);
 
-    var totalLength = path.node().getTotalLength();
-
-    path.attr("stroke-dasharray", totalLength+" "+totalLength)
-        .attr("stroke-dashoffset", totalLength)
+    //adding path transition effect to each line, from "https://stackoverflow.com/questions/21140547/accessing-svg-path-length-in-d3"    
+    path.each(function(d){d.totalLength = this.getTotalLength(); })
+        .attr("stroke-dasharray", function(d){ return d.totalLength+" "+d.totalLength ;})
+        .attr("stroke-dashoffset", function(d) { return d.totalLength; })
         .transition()
         .duration(1000)
         .ease(d3.easeLinear)
         .attr("stroke-dashoffset",0);
+    
+    //Append y-axis title
+    chartGroup.append("text")
+              .classed("text", true)
+              .attr("transform", "rotate(-90)")
+              .attr("y", 0 - margin.left)
+              .attr("x",0 - (chartHeight / 2))
+              .attr("dy", "1em")
+              .style("text-anchor", "middle")
+              .style("font-weight", "bold")
+              .text("Percentage");      
+    
+    // // Append an SVG group element to the chartGroup, create the left axis inside of it
+    chartGroup.append("g")
+              .classed("axis", true)
+              .call(leftAxis);
+
+    //append x-axis title
+    chartGroup.append("text")
+              .attr("transform", `translate(${chartWidth / 2}, ${chartHeight +margin.top/1.5})`)
+              .classed("text", true)
+              .style("font-weight", "bold")
+              .text( country);      
+
+    // // Append an SVG group element to the chartGroup, create the bottom axis inside of it
+    // // Translate the bottom axis to the bottom of the page
+    chartGroup.append("g")
+              .classed("axis", true)
+              .attr("transform", `translate(0, ${chartHeight})`)
+              .call(bottomAxis);
+    //###########################################################  
+    //append legened
+    //############################################################
+    var legend = svg.append("g")
+                    .classed("legend", true)
+                    .attr("x", 65)
+                    .attr("y", 25)
+                    .attr("height", 100)
+                    .attr("width", 100);
+    
+    legend.selectAll('g').data(resultData)
+                         .enter()
+                         .append('g')
+                         .each(function(d, i) {
+                          var g = d3.select(this);
+                              g.append("rect")
+                                .attr("x", chartWidth- 65)
+                                .attr("y", i*25)
+                                .attr("width", 10)
+                                .attr("height", 10)
+                                .style("fill", colors[i]);
+
+                              g.append("text")
+                               .attr("x", chartWidth - 50)
+                               .attr("y", i * 25+8 )
+                               .attr("height",30)
+                               .attr("width",-90)
+                               .style("fill", "black")
+                               .text(legendTexts[i]);});
+
 
 
 
   }).catch(function(error){
-    console.log(error);
+    console.log(error)
+    console.log("Missing accessibility data!")
   });
 }
 //##################################################################################################
@@ -127,7 +190,6 @@ function init() {
     // Use the first sample from the list to build the initial plots
     const firstSample = sampleNames[0];  
     buildCharts(firstSample);
-    //buildMetadata(firstSample);
   });
 }
 
