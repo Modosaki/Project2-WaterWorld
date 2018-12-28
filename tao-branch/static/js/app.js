@@ -188,6 +188,8 @@ function buildCharts(iso) {
                                .text(legendTexts[i]);});
     //#######################################################################################
     //tooltip
+    //#######################################################################################
+
     var mouseG = svg.append("g")
           .attr("class", "mouse-over-effects")
           .attr("transform", "translate(60,60)");
