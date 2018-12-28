@@ -8,10 +8,25 @@ body {
   font: 14px sans-serif;
 }
 
+.area {
+  fill: none;
+}
+
+.axis path,
+.axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
+.x.axis path {
+  display: none;
+}
+
 .line {
   fill: none;
   stroke: steelblue;
-  stroke-width: 2px;
+  stroke-width: 1.5px;
 }
 
 
@@ -19,3 +34,4 @@ body {
   fill:white;
   stroke:black;
   opacity:0.8;}
+
