@@ -326,6 +326,28 @@ function buildCharts(iso) {
 // function used to initialize the page........
 //##################################################################################################
 function init() {
+  const API_KEY = "pk.eyJ1IjoiY2FybGl0b2FkYW1zOTciLCJhIjoiY2pwZm5wNm85MGM4bjNycGRuZXZwdHR3cSJ9.UP-muJstAaOxGR2H0HqImQ";
+  console.log(API_KEY);
+
+  var map = L.map("map", {
+    center: [30.0626, 31.2497],
+    zoom: 2 
+  });
+  
+  // Create the tile layer that will be the background of our map
+  var streetmap = L.tileLayer("https://api.mapbox.com/styles/v1/mapbox/light-v9/tiles/256/{z}/{x}/{y}?access_token={accessToken}", {
+    attribution: "Map data &copy; <a href=\"http://openstreetmap.org\">OpenStreetMap</a> contributors, <a href=\"http://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA</a>, Imagery © <a href=\"http://mapbox.com\">Mapbox</a>",
+    maxZoom: 18,
+    id: "mapbox.light",
+    accessToken: API_KEY
+  }).addTo(map);
+  
+  $.getJSON("countries2.geojson", function(data) {
+      L.geoJson(data).addTo(map);
+      console.log(data);
+      console.log("data")
+  });
+
   // Grab a reference to the dropdown select element
   var selector = d3.select("#selDataset");
   // Use the list of sample names to populate the select options
