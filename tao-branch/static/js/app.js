@@ -35,7 +35,44 @@ function buildCharts(iso) {
   //fetch countries data from iso code
   d3.json("/aquadata/"+iso).then(function(data){
     //console.log(data);
-    var country = data.country
+    //#################################################################################################
+    //make pie chart
+    //#################################################################################################
+    function makePieChart(availability, id){
+      var pieData = [{
+        values: [availability, 100-availability],
+        labels: ['avaible', 'unavailable'],
+        type: 'pie'
+      }];
+      
+      var pieLayout = {
+        height: 450,
+        width: 350,
+        legend: {
+          x: 0.3,
+          y: 0
+        }
+      };
+      
+      Plotly.newPlot(id, pieData, pieLayout); 
+    }
+    totalList = data['Total population with access to safe drinking-water (JMP)'].Value
+    ruralList = data['Rural population with access to safe drinking-water (JMP)'].Value
+    urbanList = data['Urban population with access to safe drinking-water (JMP)'].Value
+
+
+    totalCleanWater = totalList[totalList.length-1];
+    ruralCleanWater = ruralList[ruralList.length-1];
+    urbanCleanWater = urbanList[urbanList.length-1];
+
+    makePieChart(totalCleanWater,"pie-total");
+    makePieChart(ruralCleanWater,"pie-rural");
+    makePieChart(urbanCleanWater,"pie-urban");
+
+    //#########################################################################################################
+    //make the area chart
+    //#########################################################################################################
+    var country = data.country;
     // clear previous graph
     chartGroup.selectAll(".line").remove();
     chartGroup.selectAll(".axis").remove();
