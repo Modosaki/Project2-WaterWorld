@@ -1,6 +1,6 @@
 // Define SVG area dimensions
-var svgWidth = 960;
-var svgHeight = 500;
+var svgWidth = 1140;
+var svgHeight = 505;
 
 // Define the chart's margins as an object
 var margin = {
@@ -20,6 +20,7 @@ var svg = d3.select("#svg")
   .attr("width", svgWidth)
   .attr("height", svgHeight);
 
+  
 // Append a group area, then set its margins
 var chartGroup = svg.append("g")
   .attr("transform", `translate(${margin.left}, ${margin.top})`);
@@ -35,7 +36,45 @@ function buildCharts(iso) {
   //fetch countries data from iso code
   d3.json("/aquadata/"+iso).then(function(data){
     //console.log(data);
-    var country = data.country
+    //#################################################################################################
+    //make pie chart
+    //#################################################################################################
+    function makePieChart(availability, id, title){
+      var pieData = [{
+        values: [availability, 100-availability],
+        labels: ['avaible', 'unavailable'],
+        type: 'pie'
+      }];
+      
+      var pieLayout = {
+        title: title,
+        height: 350,
+        width: 350,
+        legend: {
+          x: 0.3,
+          y: 0
+        }
+      };
+      
+      Plotly.newPlot(id, pieData, pieLayout); 
+    }
+    totalList = data['Total population with access to safe drinking-water (JMP)'].Value
+    ruralList = data['Rural population with access to safe drinking-water (JMP)'].Value
+    urbanList = data['Urban population with access to safe drinking-water (JMP)'].Value
+
+
+    totalCleanWater = totalList[totalList.length-1];
+    ruralCleanWater = ruralList[ruralList.length-1];
+    urbanCleanWater = urbanList[urbanList.length-1];
+
+    makePieChart(totalCleanWater,"pie-total", "total popluation");
+    makePieChart(ruralCleanWater,"pie-rural", "rural popluation");
+    makePieChart(urbanCleanWater,"pie-urban", "urban popluation");
+
+    //#########################################################################################################
+    //make the area chart
+    //#########################################################################################################
+    var country = data.country;
     // clear previous graph
     chartGroup.selectAll(".line").remove();
     chartGroup.selectAll(".axis").remove();
@@ -275,19 +314,18 @@ function buildCharts(iso) {
             
           return "translate(" + mouse[0] + "," + pos.y +")";
         });
-
-
     });
 
-
   }).catch(function(error){
-    console.log(error)
-    console.log("Missing accessibility data!")
+    console.log(error);
+    alert("Missing accessibility data!");
   });
 }
 //##################################################################################################
 // function used to initialize the page........
 //##################################################################################################
+
+// Initialize the dashboard
 function init() {
   // Grab a reference to the dropdown select element
   var selector = d3.select("#selDataset");
@@ -297,7 +335,7 @@ function init() {
       selector
         .append("option")
         .text(sample)
-        .property("value", sample);
+        .property("id", sample);
     });
 
     // Use the first sample from the list to build the initial plots
@@ -305,12 +343,89 @@ function init() {
     buildCharts(firstSample);
   });
 }
+//Build the leaflet map
+var map = L.map("map", {
+  center: [30.0626, 31.2497],
+  zoom: 2 
+});
+//initialize title layer
+var streetmap = L.tileLayer("https://api.mapbox.com/styles/v1/mapbox/light-v9/tiles/256/{z}/{x}/{y}?access_token={accessToken}", {
+    attribution: "Map data &copy; <a href=\"http://openstreetmap.org\">OpenStreetMap</a> contributors, <a href=\"http://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA</a>, Imagery © <a href=\"http://mapbox.com\">Mapbox</a>",
+    maxZoom: 18,
+    id: "mapbox.light",
+    accessToken: API_KEY
+  }).addTo(map);
 
-function optionChanged(newIso) {
-  // Fetch new data each time a new sample is selected
-  buildCharts(newIso);
-  //buildMetadata(newSample);
-}
+//Get country board polygon data using Jquery
+  const geoPath = "https://s3.amazonaws.com/rawstore.datahub.io/23f420f929e0e09c39d916b8aaa166fb.geojson"
+  $.getJSON(geoPath, function(data) {
+    //console.log(data)
+    //data.features.forEach(d => {console.log( d.properties.ISO_A3)})
+    L.geoJson(data, {
+      onEachFeature: function(feature, layer){
+        //Add event for mouse over/out/click on polygon features
+        layer.on({
+          click: function(event) {
+            country_ISO = feature.properties.ISO_A3;
+            //change the dropdown menu to match current country selection
+            try{
+              document.getElementById(country_ISO).selected = true;
+              buildCharts(country_ISO);
+            }
+            catch(err){
+              console.log(err);
+              alert('No water accessibility data!');
+            }            
+            map.fitBounds(event.target.getBounds())
+          },
 
-// Initialize the dashboard
+          mouseover: function(event){
+            event.target.setStyle({
+              fillOpacity: 0.9
+            });
+          },
+
+          mouseout: function(event){
+            event.target.setStyle({
+              fillOpacity: 0.3
+            });
+          }
+        })
+      }
+    }).addTo(map);
+
+    //When the dropdown menu changed, map will fly to the corresponding boundary
+    //map.eachLayer(function(layer){console.log(layer)});
+    isoToLeafletId = {}          //leaflet uses a special id for each polygon of different countries, build a dictionary/object to convert this into iso code of that country
+    map.eachLayer((layer)=>{
+      try{
+        // console.log(layer.feature.properties.ISO_A3);
+        // console.log(layer._leaflet_id)
+        // console.log("##########################################")
+        isoToLeafletId[layer.feature.properties.ISO_A3] = layer._leaflet_id;
+      }
+      catch(error){console.log("no data")}
+    });
+    //console.log(isoToLeafletId)
+    
+    //update map when a dropdown menu is changed
+    document.getElementById("selDataset")
+            .addEventListener("change", function(){
+            try{
+              let country_ISO = this.value; 
+              buildCharts(country_ISO);
+              
+              leaflet_id = isoToLeafletId[country_ISO];
+              selectLayer = map._layers[leaflet_id];
+              map.flyToBounds(selectLayer.getBounds());
+            }
+            catch(error){
+              console.log(error);
+              console.log("no such data");
+            }
+            });
+
+  });
+
 init();
+
