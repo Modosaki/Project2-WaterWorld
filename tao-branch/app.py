@@ -52,6 +52,7 @@ def names():
 @app.route("/aquadata/<iso>")
 def sample_aquadata(iso):
     """Return the Aqua stat table data for a given country(by iso code)."""
+    #query aquastat table
     sel = [
         Aquastat_table.country,
         Aquastat_table.Variable,
@@ -64,11 +65,17 @@ def sample_aquadata(iso):
     country_stmt = db.session.query(*sel).filter(Aquastat_table.iso == iso).statement
     country_df = pd.read_sql_query(country_stmt, db.session.bind)
 
+    #query wqi table
+    wqi_stmt = db.session.query(WQI_table.iso, WQI_table.H2O_current).filter(WQI_table.iso == iso).statement
+    wqi_df = pd.read_sql_query(wqi_stmt, db.session.bind)
+
     #Build dictionary to return as json
     country_df_grouped = country_df.groupby(['country','Variable'])
     country_aquadata = {}
 
     country_aquadata['iso'] = iso
+    country_aquadata['wqi'] = wqi_df.iloc[0]['H2O_current']
+
     country_aquadata['country'] = country_df['country'].iloc[0]
     
     for index, table in country_df_grouped:
@@ -78,26 +85,6 @@ def sample_aquadata(iso):
         country_aquadata[index[1]] = data
     #print(sample_metadata)
     return jsonify(country_aquadata)
-
-
-# @app.route("/samples/<sample>")
-# def samples(sample):
-#     """Return `otu_ids`, `otu_labels`,and `sample_values`."""
-#     stmt = db.session.query(Samples).statement
-#     df = pd.read_sql_query(stmt, db.session.bind)
-
-#     # Filter the data based on the sample number and
-#     # only keep rows with values above 1
-#     sample_data = df.loc[df[sample] > 1, ["otu_id", "otu_label", sample]]
-#     #sort the data by sample value
-#     sample_data = sample_data.sort_values(by=[sample],ascending=False)
-#     # Format the data to send as json
-#     data = {
-#         "otu_ids": sample_data.otu_id.values.tolist(),
-#         "sample_values": sample_data[sample].values.tolist(),
-#         "otu_labels": sample_data.otu_label.tolist(),
-#     }
-#     return jsonify(data)
 
 
 if __name__ == "__main__":

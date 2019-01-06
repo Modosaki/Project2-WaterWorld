@@ -1,6 +1,6 @@
 // Define SVG area dimensions
-var svgWidth = 960;
-var svgHeight = 500;
+var svgWidth = 1140;
+var svgHeight = 505;
 
 // Define the chart's margins as an object
 var margin = {
@@ -20,6 +20,7 @@ var svg = d3.select("#svg")
   .attr("width", svgWidth)
   .attr("height", svgHeight);
 
+  
 // Append a group area, then set its margins
 var chartGroup = svg.append("g")
   .attr("transform", `translate(${margin.left}, ${margin.top})`);
@@ -38,7 +39,7 @@ function buildCharts(iso) {
     //#################################################################################################
     //make pie chart
     //#################################################################################################
-    function makePieChart(availability, id){
+    function makePieChart(availability, id, title){
       var pieData = [{
         values: [availability, 100-availability],
         labels: ['avaible', 'unavailable'],
@@ -46,7 +47,8 @@ function buildCharts(iso) {
       }];
       
       var pieLayout = {
-        height: 450,
+        title: title,
+        height: 350,
         width: 350,
         legend: {
           x: 0.3,
@@ -65,9 +67,9 @@ function buildCharts(iso) {
     ruralCleanWater = ruralList[ruralList.length-1];
     urbanCleanWater = urbanList[urbanList.length-1];
 
-    makePieChart(totalCleanWater,"pie-total");
-    makePieChart(ruralCleanWater,"pie-rural");
-    makePieChart(urbanCleanWater,"pie-urban");
+    makePieChart(totalCleanWater,"pie-total", "total popluation");
+    makePieChart(ruralCleanWater,"pie-rural", "rural popluation");
+    makePieChart(urbanCleanWater,"pie-urban", "urban popluation");
 
     //#########################################################################################################
     //make the area chart
@@ -312,42 +314,19 @@ function buildCharts(iso) {
             
           return "translate(" + mouse[0] + "," + pos.y +")";
         });
-
-
     });
 
-
   }).catch(function(error){
-    console.log(error)
-    console.log("Missing accessibility data!")
+    console.log(error);
+    alert("Missing accessibility data!");
   });
 }
 //##################################################################################################
 // function used to initialize the page........
 //##################################################################################################
+
+// Initialize the dashboard
 function init() {
-  const API_KEY = "pk.eyJ1IjoiY2FybGl0b2FkYW1zOTciLCJhIjoiY2pwZm5wNm85MGM4bjNycGRuZXZwdHR3cSJ9.UP-muJstAaOxGR2H0HqImQ";
-  console.log(API_KEY);
-
-  var map = L.map("map", {
-    center: [30.0626, 31.2497],
-    zoom: 2 
-  });
-  
-  // Create the tile layer that will be the background of our map
-  var streetmap = L.tileLayer("https://api.mapbox.com/styles/v1/mapbox/light-v9/tiles/256/{z}/{x}/{y}?access_token={accessToken}", {
-    attribution: "Map data &copy; <a href=\"http://openstreetmap.org\">OpenStreetMap</a> contributors, <a href=\"http://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA</a>, Imagery © <a href=\"http://mapbox.com\">Mapbox</a>",
-    maxZoom: 18,
-    id: "mapbox.light",
-    accessToken: API_KEY
-  }).addTo(map);
-  
-  $.getJSON("countries2.geojson", function(data) {
-      L.geoJson(data).addTo(map);
-      console.log(data);
-      console.log("data")
-  });
-
   // Grab a reference to the dropdown select element
   var selector = d3.select("#selDataset");
   // Use the list of sample names to populate the select options
@@ -356,7 +335,7 @@ function init() {
       selector
         .append("option")
         .text(sample)
-        .property("value", sample);
+        .property("id", sample);
     });
 
     // Use the first sample from the list to build the initial plots
@@ -365,11 +344,84 @@ function init() {
   });
 }
 
-function optionChanged(newIso) {
-  // Fetch new data each time a new sample is selected
-  buildCharts(newIso);
-  //buildMetadata(newSample);
-}
+var map = L.map("map", {
+  center: [30.0626, 31.2497],
+  zoom: 2 
+});
 
-// Initialize the dashboard
+var streetmap = L.tileLayer("https://api.mapbox.com/styles/v1/mapbox/light-v9/tiles/256/{z}/{x}/{y}?access_token={accessToken}", {
+    attribution: "Map data &copy; <a href=\"http://openstreetmap.org\">OpenStreetMap</a> contributors, <a href=\"http://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA</a>, Imagery © <a href=\"http://mapbox.com\">Mapbox</a>",
+    maxZoom: 18,
+    id: "mapbox.light",
+    accessToken: API_KEY
+  }).addTo(map);
+  
+  const geoPath = "https://s3.amazonaws.com/rawstore.datahub.io/23f420f929e0e09c39d916b8aaa166fb.geojson"
+  $.getJSON(geoPath, function(data) {
+    //console.log(data)
+    //data.features.forEach(d => {console.log( d.properties.ISO_A3)})
+    L.geoJson(data, {
+      onEachFeature: function(feature, layer){
+
+        layer.on({
+          click: function(event) {
+            country_ISO = feature.properties.ISO_A3;
+            //change the dropdown menu to match current country selection
+            try{
+              document.getElementById(country_ISO).selected = true;
+              buildCharts(country_ISO);
+            }
+            catch(err){
+              console.log(err);
+              alert('No water accessibility data!');
+            }            
+            map.fitBounds(event.target.getBounds())
+          },
+
+          mouseover: function(event){
+            event.target.setStyle({
+              fillOpacity: 0.9
+            });
+          },
+
+          mouseout: function(event){
+            event.target.setStyle({
+              fillOpacity: 0.3
+            });
+          }
+        })
+      }
+    }).addTo(map);
+    //map.eachLayer(function(layer){console.log(layer)});
+    dictionary = {}
+    map.eachLayer((layer)=>{
+      try{
+        // console.log(layer.feature.properties.ISO_A3);
+        // console.log(layer._leaflet_id)
+        // console.log("##########################################")
+        dictionary[layer.feature.properties.ISO_A3] = layer._leaflet_id;
+      }
+      catch(error){console.log("no data")}
+    });
+    //console.log(dictionary)
+    
+    document.getElementById("selDataset")
+            .addEventListener("change", function(){
+            try{
+              let country_ISO = this.value; 
+              buildCharts(country_ISO);
+              
+              leaflet_id = dictionary[country_ISO];
+              selectLayer = map._layers[leaflet_id];
+              map.flyToBounds(selectLayer.getBounds());
+            }
+            catch(error){
+              console.log(error);
+              console.log("no such data");
+            }
+            });
+
+  });
+
 init();
+

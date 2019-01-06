@@ -37,34 +37,34 @@
 
     
     <div class="row">
-        <div class="col-md-12">
+        <div class="col-md-2">
+            <div class="well">
+              <h5>SELECT Country:</h5>
+              <!-- <select id="selDataset" onchange="optionChanged(this.value)"></select> -->
+              <select id="selDataset"></select>
+            </div>
+            <!-- <div class="panel panel-primary">
+              <div class="panel-heading">
+                <h3 class="panel-title">Sample MetaData</h3>
+              </div>
+              <div id="sample-metadata" class="panel-body"></div>
+            </div> -->
+        </div>
+
+        <div class="col-md-10">
           <div id="map"></div>
         </div>
-      </div>
-  
-    <div class="row">
-      <div class="col-md-2">
-        <div class="well">
-          <h5>SELECT Sample:</h5>
-          <select id="selDataset" onchange="optionChanged(this.value)"></select>
-        </div>
-        <!-- <div class="panel panel-primary">
-          <div class="panel-heading">
-            <h3 class="panel-title">Sample MetaData</h3>
-          </div>
-          <div id="sample-metadata" class="panel-body"></div>
-        </div> -->
-      </div>
     </div>
+  
 
     <div class = "row">
-      <div class="col-md-3">
+      <div class="col-md-4">
         <div id="pie-total"></div>
       </div>
-      <div class="col-md-3">
+      <div class="col-md-4">
         <div id="pie-rural"></div>
       </div>
-      <div class="col-md-3">
+      <div class="col-md-4">
         <div id="pie-urban"></div>
       </div>
     </div>
@@ -77,19 +77,21 @@
 
   </div>
 
-  <!-- d3 js-->
+  <!-- d3 & Jquery-->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/5.5.0/d3.js"></script>
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
   <!-- Leaflet heatmap plugin-->
   <!-- <script type="text/javascript" src="static/js/leaflet-heat.js"></script> -->
 
+
+  <!-- Plotly -->
+
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>  
+  
   <!-- API key -->
-  <!-- 
-    <script src="{{ url_for('static', filename='js/config.js') }}"></script>
-  -->
+  <script src="{{ url_for('static', filename='js/config.js') }}"></script>
 
-
-  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+  <!-- Main code -->
   <script src="{{ url_for('static', filename='js/app.js') }}"></script>
 
 </body>

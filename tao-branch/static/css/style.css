@@ -8,6 +8,10 @@ body {
   height: 500px;
 }
 
+#svg{
+  width: 100%;
+}
+
 .axis {
   font: 14px sans-serif;
 }
