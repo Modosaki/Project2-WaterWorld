@@ -28,7 +28,6 @@ var chartGroup = svg.append("g")
 // Configure a parseTime function which will return a new Date object from a string
 var parseTime = d3.timeParse("%Y");
 
-
 //##################################################################################################
 //function to build line charts
 //##################################################################################################
@@ -142,7 +141,6 @@ function buildCharts(iso) {
                         .attr("d", drawLine);
     
     //Draw areas with different color
-
      chartGroup.selectAll(".area")
               .data(resultData)
               .enter()
@@ -226,7 +224,7 @@ function buildCharts(iso) {
                                .style("fill", "black")
                                .text(legendTexts[i]);});
     //#######################################################################################
-    //tooltip
+    //tooltip, adapted from https://bl.ocks.org/larsenmtl/e3b8b7c2ca4787f77d78f58d41c3da91
     //#######################################################################################
 
     var mouseG = svg.append("g")
@@ -325,24 +323,6 @@ function buildCharts(iso) {
 // function used to initialize the page........
 //##################################################################################################
 
-// Initialize the dashboard
-function init() {
-  // Grab a reference to the dropdown select element
-  var selector = d3.select("#selDataset");
-  // Use the list of sample names to populate the select options
-  d3.json("/names").then((sampleNames) => {
-    sampleNames.forEach((sample) => {
-      selector
-        .append("option")
-        .text(sample)
-        .property("id", sample);
-    });
-
-    // Use the first sample from the list to build the initial plots
-    const firstSample = sampleNames[0];  
-    buildCharts(firstSample);
-  });
-}
 //Build the leaflet map
 var map = L.map("map", {
   center: [30.0626, 31.2497],
@@ -369,7 +349,10 @@ var streetmap = L.tileLayer("https://api.mapbox.com/styles/v1/mapbox/light-v9/ti
             country_ISO = feature.properties.ISO_A3;
             //change the dropdown menu to match current country selection
             try{
-              document.getElementById(country_ISO).selected = true;
+              //JQuery version
+              $("#selDataset").find('option[id="'+ country_ISO +'"]').prop('selected', 'selected')
+              //regular js version
+              //document.getElementById(country_ISO).selected = true;
               buildCharts(country_ISO);
             }
             catch(err){
@@ -399,33 +382,65 @@ var streetmap = L.tileLayer("https://api.mapbox.com/styles/v1/mapbox/light-v9/ti
     isoToLeafletId = {}          //leaflet uses a special id for each polygon of different countries, build a dictionary/object to convert this into iso code of that country
     map.eachLayer((layer)=>{
       try{
-        // console.log(layer.feature.properties.ISO_A3);
-        // console.log(layer._leaflet_id)
-        // console.log("##########################################")
         isoToLeafletId[layer.feature.properties.ISO_A3] = layer._leaflet_id;
       }
       catch(error){console.log("no data")}
     });
     //console.log(isoToLeafletId)
-    
-    //update map when a dropdown menu is changed
-    document.getElementById("selDataset")
-            .addEventListener("change", function(){
-            try{
-              let country_ISO = this.value; 
-              buildCharts(country_ISO);
+    //regular js version
+    // document.getElementById("selDataset")
+    //         .addEventListener("change", function(){
+    //         try{
+    //           let country_ISO = this.value; 
+    //           buildCharts(country_ISO);
               
-              leaflet_id = isoToLeafletId[country_ISO];
-              selectLayer = map._layers[leaflet_id];
-              map.flyToBounds(selectLayer.getBounds());
-            }
-            catch(error){
-              console.log(error);
-              console.log("no such data");
-            }
-            });
+    //           leaflet_id = isoToLeafletId[country_ISO];
+    //           selectLayer = map._layers[leaflet_id];
+    //           map.flyToBounds(selectLayer.getBounds());
+    //         }
+    //         catch(error){
+    //           console.log(error);
+    //           console.log("no such data");
+    //         }
+    //         });
 
+    //update map when a dropdown menu is changed, Jquery version
+    $("#selDataset").change(function(){
+              try{
+                let country_ISO = this.value; 
+                buildCharts(country_ISO);
+                
+                leaflet_id = isoToLeafletId[country_ISO];
+                selectLayer = map._layers[leaflet_id];
+                map.flyToBounds(selectLayer.getBounds());
+              }
+              catch(error){
+                console.log(error);
+                console.log("no such data");
+              }
+              })        
+   
   });
 
+// Initialize the dashboard
+function init() {
+  // Grab a reference to the dropdown select element
+  // $( "#map" ).css( "border", "3px solid red" );
+
+  var selector = d3.select("#selDataset");
+  // Use the list of sample names to populate the select options
+  d3.json("/names").then((sampleNames) => {
+    sampleNames.forEach((sample) => {
+      selector
+        .append("option")
+        .text(sample)
+        .property("id", sample);
+    });
+
+    // Use the first sample from the list to build the initial plots
+    const firstSample = sampleNames[0];  
+    buildCharts(firstSample);
+  });
+}
 init();
 
