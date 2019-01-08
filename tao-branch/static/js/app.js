@@ -319,10 +319,10 @@ function buildCharts(iso) {
     alert("Missing accessibility data!");
   });
 }
-//##################################################################################################
-// function used to initialize the page........
-//##################################################################################################
 
+//#################################################################################
+//leaflet map set up
+//#################################################################################
 //Build the leaflet map
 var map = L.map("map", {
   center: [30.0626, 31.2497],
@@ -336,43 +336,58 @@ var streetmap = L.tileLayer("https://api.mapbox.com/styles/v1/mapbox/light-v9/ti
     accessToken: API_KEY
   }).addTo(map);
 
-//Get country board polygon data using Jquery
+//Get country border polygon data using Jquery
   const geoPath = "https://s3.amazonaws.com/rawstore.datahub.io/23f420f929e0e09c39d916b8aaa166fb.geojson"
   $.getJSON(geoPath, function(data) {
+    var counter = 0;
     //console.log(data)
     //data.features.forEach(d => {console.log( d.properties.ISO_A3)})
     L.geoJson(data, {
+      
       onEachFeature: function(feature, layer){
-        //Add event for mouse over/out/click on polygon features
-        layer.on({
-          click: function(event) {
-            country_ISO = feature.properties.ISO_A3;
-            //change the dropdown menu to match current country selection
-            try{
-              //JQuery version
-              $("#selDataset").find('option[id="'+ country_ISO +'"]').prop('selected', 'selected')
-              //regular js version
-              //document.getElementById(country_ISO).selected = true;
-              buildCharts(country_ISO);
-            }
-            catch(err){
-              console.log(err);
-              alert('No water accessibility data!');
-            }            
-            map.fitBounds(event.target.getBounds())
-          },
+        //console.log(feature.properties.ISO_A3);
+        d3.json("/wqidata/"+feature.properties.ISO_A3).then(function(data){
+          //console.log(data)
+          try{
+          waterIndex = data[0].H2O_current
+          layer.setStyle({color: d3.interpolateRgb("white", "rgb(0, 0, 255)")(waterIndex/100), 
+                          fillOpacity:0.7});
+          
+          layer.on(
+            {    
+              click: function(event) {
+                              country_ISO = feature.properties.ISO_A3;
+                              //change the dropdown menu to match current country selection
+                              //JQuery version
+                              $("#selDataset").find('option[value="'+ country_ISO +'"]').prop('selected', 'selected')
+                              //regular js version
+                              //document.getElementByValue(country_ISO).selected = true;
+                              buildCharts(country_ISO);
+                              map.flyToBounds(event.target.getBounds())
+                            },
+                  
+              mouseover: function(event){
+                              event.target.setStyle({
+                                fillOpacity: 0.2
+                              });
+                            },
+                  
+              mouseout: function(event){
+                              event.target.setStyle({
+                                fillOpacity: 0.7
+                              });
+                            }
+                          });
 
-          mouseover: function(event){
-            event.target.setStyle({
-              fillOpacity: 0.9
-            });
-          },
+          layer.bindPopup("<h4>" + "Water quality index" + "</h4> <hr> <h5>" + waterIndex + "</h5>");
 
-          mouseout: function(event){
-            event.target.setStyle({
-              fillOpacity: 0.3
-            });
           }
+          catch{
+            layer.setStyle({color: "black",
+                            fillOpacity:0.7 })
+          }
+        }).catch(function(error){
+          console.log(error);
         })
       }
     }).addTo(map);
@@ -386,23 +401,6 @@ var streetmap = L.tileLayer("https://api.mapbox.com/styles/v1/mapbox/light-v9/ti
       }
       catch(error){console.log("no data")}
     });
-    //console.log(isoToLeafletId)
-    //regular js version
-    // document.getElementById("selDataset")
-    //         .addEventListener("change", function(){
-    //         try{
-    //           let country_ISO = this.value; 
-    //           buildCharts(country_ISO);
-              
-    //           leaflet_id = isoToLeafletId[country_ISO];
-    //           selectLayer = map._layers[leaflet_id];
-    //           map.flyToBounds(selectLayer.getBounds());
-    //         }
-    //         catch(error){
-    //           console.log(error);
-    //           console.log("no such data");
-    //         }
-    //         });
 
     //update map when a dropdown menu is changed, Jquery version
     $("#selDataset").change(function(){
@@ -417,12 +415,13 @@ var streetmap = L.tileLayer("https://api.mapbox.com/styles/v1/mapbox/light-v9/ti
               catch(error){
                 console.log(error);
                 console.log("no such data");
-              }
-              })        
-   
+              }})        
   });
 
-// Initialize the dashboard
+
+//##################################################################################################
+// function used to initialize the dashborad
+//##################################################################################################
 function init() {
   // Grab a reference to the dropdown select element
   // $( "#map" ).css( "border", "3px solid red" );
@@ -433,12 +432,12 @@ function init() {
     sampleNames.forEach((sample) => {
       selector
         .append("option")
-        .text(sample)
-        .property("id", sample);
+        .text(sample.country)
+        .property("value", sample.iso);
     });
 
     // Use the first sample from the list to build the initial plots
-    const firstSample = sampleNames[0];  
+    const firstSample = sampleNames[0].iso;  
     buildCharts(firstSample);
   });
 }
