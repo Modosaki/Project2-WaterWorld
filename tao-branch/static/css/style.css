@@ -4,6 +4,10 @@ body {
   margin: 0;
 }
 
+#selDataset {
+  max-width: 75%;
+}
+
 #map {
   height: 500px;
 }
