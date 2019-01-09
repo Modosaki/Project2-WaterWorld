@@ -30,6 +30,23 @@ Base.prepare(db.engine, reflect=True)
 Aquastat_table = Base.classes.Aquastat_table
 WQI_table = Base.classes.WQI_table
 
+## create table in sqlite with index column as primary key
+# sqlite> create table `WQITable`(
+#     `index` int primary key,
+#     `iso` varchar(20),
+#     `country` varchar(30),
+#     `H2O.current` float);
+
+## show table header in sqlite3
+#    .headers on
+#    .mode column
+
+# insert into `WQITable`(`iso`,`country`,`H2O.current`)
+#    ...> select `iso`,`country`,`H2O.current` FROM `WQI_table`
+#    ...> ;
+
+#  alter table `WQITable`
+#    ...> rename column `H2O.current` to `H2O_current`;
 
 @app.route("/")
 def index():

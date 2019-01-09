@@ -339,7 +339,6 @@ var streetmap = L.tileLayer("https://api.mapbox.com/styles/v1/mapbox/light-v9/ti
 //Get country border polygon data using Jquery
   const geoPath = "https://s3.amazonaws.com/rawstore.datahub.io/23f420f929e0e09c39d916b8aaa166fb.geojson"
   $.getJSON(geoPath, function(data) {
-    var counter = 0;
     //console.log(data)
     //data.features.forEach(d => {console.log( d.properties.ISO_A3)})
     L.geoJson(data, {
