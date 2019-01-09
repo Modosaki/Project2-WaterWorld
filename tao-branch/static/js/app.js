@@ -41,7 +41,7 @@ function buildCharts(iso) {
     function makePieChart(availability, id, title){
       var pieData = [{
         values: [availability, 100-availability],
-        labels: ['avaible', 'unavailable'],
+        labels: ['available', 'unavailable'],
         type: 'pie'
       }];
       
@@ -66,9 +66,9 @@ function buildCharts(iso) {
     ruralCleanWater = ruralList[ruralList.length-1];
     urbanCleanWater = urbanList[urbanList.length-1];
 
-    makePieChart(totalCleanWater,"pie-total", "total popluation");
-    makePieChart(ruralCleanWater,"pie-rural", "rural popluation");
-    makePieChart(urbanCleanWater,"pie-urban", "urban popluation");
+    makePieChart(totalCleanWater,"pie-total", "total population");
+    makePieChart(ruralCleanWater,"pie-rural", "rural population");
+    makePieChart(urbanCleanWater,"pie-urban", "urban population");
 
     //#########################################################################################################
     //make the area chart
@@ -339,7 +339,6 @@ var streetmap = L.tileLayer("https://api.mapbox.com/styles/v1/mapbox/light-v9/ti
 //Get country border polygon data using Jquery
   const geoPath = "https://s3.amazonaws.com/rawstore.datahub.io/23f420f929e0e09c39d916b8aaa166fb.geojson"
   $.getJSON(geoPath, function(data) {
-    var counter = 0;
     //console.log(data)
     //data.features.forEach(d => {console.log( d.properties.ISO_A3)})
     L.geoJson(data, {
