@@ -41,7 +41,7 @@ function buildCharts(iso) {
     function makePieChart(availability, id, title){
       var pieData = [{
         values: [availability, 100-availability],
-        labels: ['avaible', 'unavailable'],
+        labels: ['available', 'unavailable'],
         type: 'pie'
       }];
       
@@ -66,9 +66,9 @@ function buildCharts(iso) {
     ruralCleanWater = ruralList[ruralList.length-1];
     urbanCleanWater = urbanList[urbanList.length-1];
 
-    makePieChart(totalCleanWater,"pie-total", "total popluation");
-    makePieChart(ruralCleanWater,"pie-rural", "rural popluation");
-    makePieChart(urbanCleanWater,"pie-urban", "urban popluation");
+    makePieChart(totalCleanWater,"pie-total", "total population");
+    makePieChart(ruralCleanWater,"pie-rural", "rural population");
+    makePieChart(urbanCleanWater,"pie-urban", "urban population");
 
     //#########################################################################################################
     //make the area chart

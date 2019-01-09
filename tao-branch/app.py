@@ -42,11 +42,10 @@ WQI_table = Base.classes.WQI_table
 #    .mode column
 
 # insert into `WQITable`(`iso`,`country`,`H2O.current`)
-#    ...> select `iso`,`country`,`H2O.current` FROM `WQI_table`
-#    ...> ;
+# select `iso`,`country`,`H2O.current` FROM `WQI_table` ;
 
 #  alter table `WQITable`
-#    ...> rename column `H2O.current` to `H2O_current`;
+#  rename column `H2O.current` to `H2O_current`;
 
 @app.route("/")
 def index():
