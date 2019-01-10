@@ -173,7 +173,7 @@ function buildCharts(iso) {
               .attr("dy", "1em")
               .style("text-anchor", "middle")
               .style("font-weight", "bold")
-              .text("Percentage");      
+              .text("Percentage of population with access to clean water");      
     
     // // Append an SVG group element to the chartGroup, create the left axis inside of it
     chartGroup.append("g")
