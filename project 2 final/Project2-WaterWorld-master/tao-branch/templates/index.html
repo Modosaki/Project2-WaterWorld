@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Project 2 test</title>
+
+  <!-- Leaflet CSS & JS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.3.3/dist/leaflet.css"
+  integrity="sha512-Rksm5RenBEKSKFjgI3a41vrjkw4EVPlJ3+OiI65vTjIdo9brlAacEuKOiQ5OFh7cOI1bkDwLqdLw3Zg0cRJAAQ=="
+   crossorigin=""/>
+  
+  <script src="https://unpkg.com/leaflet@1.3.3/dist/leaflet.js"
+  integrity="sha512-tAGcCfR4Sc5ZP5ZoVz0quoZDYX5aCtEm/eu1KhSLj2c9eFrylXZknQYmxUssFaVJKvvc0dJQixhGjG2yXWiV9Q=="
+  crossorigin=""></script>
+
+
+  <!-- Bootstrap -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+
+</head>
+
+<body>
+
+  <div class="container">
+    
+    <div class="row">
+      <div class="col-md-12 jumbotron text-center">
+        <h1>Water Quality and Accessability Dashboard</h1>
+        <p>Use the interactive charts below to explore the dataset</p>
+      </div>
+    </div>
+
+    
+    <div class="row">
+        <div class="col-md-2">
+            <div class="well">
+              <h5>SELECT Country:</h5>
+              <!-- <select id="selDataset" onchange="optionChanged(this.value)"></select> -->
+              <select id="selDataset"></select>
+            </div>
+            <!-- <div class="panel panel-primary">
+              <div class="panel-heading">
+                <h3 class="panel-title">Sample MetaData</h3>
+              </div>
+              <div id="sample-metadata" class="panel-body"></div>
+            </div> -->
+        </div>
+
+        <div class="col-md-10">
+          <div id="map"></div>
+        </div>
+    </div>
+  
+
+    <div class = "row">
+      <div class="col-md-4">
+        <div id="pie-total"></div>
+      </div>
+      <div class="col-md-4">
+        <div id="pie-rural"></div>
+      </div>
+      <div class="col-md-4">
+        <div id="pie-urban"></div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-md-12">
+        <div id="svg"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- d3 & Jquery-->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/5.5.0/d3.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  <!-- Leaflet heatmap plugin-->
+  <!-- <script type="text/javascript" src="static/js/leaflet-heat.js"></script> -->
+
+
+  <!-- Plotly -->
+
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>  
+  
+  <!-- API key -->
+  <script src="{{ url_for('static', filename='js/config.js') }}"></script>
+
+  <!-- Main code -->
+  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+
+</body>
+
+</html>
